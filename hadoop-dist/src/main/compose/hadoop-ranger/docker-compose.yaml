@@ -24,7 +24,6 @@ x-common-config:
   env_file:
     - ./config
   environment:
-    - HDFS-SITE.XML_dfs.permissions=true
     - HDFS-SITE.XML_dfs.permissions.enabled=true
     - HDFS-SITE.XML_dfs.namenode.acls.enabled=true
     - HDFS-SITE.XML_dfs.permissions.ContentSummary.subAccess=true
