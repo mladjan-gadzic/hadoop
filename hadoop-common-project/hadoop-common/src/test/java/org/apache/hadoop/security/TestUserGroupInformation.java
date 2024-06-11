@@ -38,6 +38,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -62,6 +63,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -1362,5 +1364,29 @@ public class TestUserGroupInformation {
 
     // Cleanup
     System.clearProperty(CommonConfigurationKeysPublic.HADOOP_TOKENS);
+  }
+
+  @Test
+  public void testEquals2WhenPrivateCredentialsHaveEmptyMaps() {
+    // given
+    Set<Principal> principals = new HashSet<>();
+    principals.add(new User("user1"));
+    Subject s1 = new Subject(false, principals, new HashSet<>(), new HashSet<>());
+
+    Set<Credentials> privCreds2 = new HashSet<>();
+    Credentials cred2 = mock(Credentials.class);
+    privCreds2.add(cred2);
+    Subject s2 = new Subject(false, principals, new HashSet<>(), privCreds2);
+
+    UserGroupInformation ugi1 = new UserGroupInformation(s1);
+    UserGroupInformation ugi2 = new UserGroupInformation(s2);
+
+    //when
+    when(cred2.getTokenMap()).thenReturn(new HashMap<>());
+    when(cred2.getSecretKeyMap()).thenReturn(new HashMap<>());
+    boolean res = ugi1.equals2(ugi2);
+
+    // then
+    Assertions.assertTrue(res);
   }
 }

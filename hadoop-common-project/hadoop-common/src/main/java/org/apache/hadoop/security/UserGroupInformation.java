@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -1842,6 +1843,40 @@ public class UserGroupInformation {
     } else {
       return subject == ((UserGroupInformation) o).subject;
     }
+  }
+
+  /**
+   * Compare the subjects field by field to see if they are equal to each other.
+   */
+  public boolean equals2(Object o) {
+    LOG.info("Inside UGI equals2 method");
+    if (this == o) {
+      return true;
+    }
+
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Subject s2 = ((UserGroupInformation) o).getSubject();
+
+    Set<Object> filteredPrivateCredentials =
+        filterOutElementsFromPrivateCredentialsWithEmptyMaps(s2);
+
+    return subject.getPrincipals().equals(s2.getPrincipals())
+        && subject.getPublicCredentials().equals(s2.getPublicCredentials())
+        && subject.getPrivateCredentials().equals(filteredPrivateCredentials);
+  }
+
+  /**
+   * Returns filtered private credentials that consist of no elements that have empty maps.
+   */
+  private static Set<Object> filterOutElementsFromPrivateCredentialsWithEmptyMaps(Subject s2) {
+    return s2.getPrivateCredentials().stream()
+        .filter(curr -> !(curr instanceof Credentials)
+            || !((Credentials) curr).getTokenMap().isEmpty()
+            || !((Credentials) curr).getSecretKeyMap().isEmpty())
+        .collect(Collectors.toSet());
   }
 
   /**
